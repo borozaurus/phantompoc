@@ -5,6 +5,8 @@ import com.websudos.phantom.dsl.DateTime
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 import scala.util.{Success, Random, Failure}
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -15,25 +17,23 @@ class AddUser extends FlatSpec with Matchers {
   "AddUser" should "add user and extract it" in {
     val someRandomNumber = Random.nextInt()
     val uuid = UUID.randomUUID()
-    var testName = "testName" + someRandomNumber
+    val testName = "testName" + someRandomNumber
 
     val user = User(uuid, "testEmail", testName, new DateTime)
-    var insert = MyDatabase.users.store(user)
-
-    insert onComplete {
-      case Failure(t) => fail("Fail to persist" )
-      case _ =>
+    val insert = MyDatabase.users.store(user) map {
+      x => assert(x.isFullyFetched)
     }
 
-    insert wait
+    Await.ready(insert, Duration.Inf)
 
-    var retrivedUser = MyDatabase.users.getById(uuid)
-
-    retrivedUser onSuccess  {
+    val retrivedUser = MyDatabase.users.getById(uuid) map {
       case None => fail("No user retrived")
-      case Some(us) => assert(us.name == testName)
+      case Some(us) =>{
+        println("User name confirmed ")
+        assert(us.name == testName)}
     }
 
-    retrivedUser wait
+    println("Waiting for result")
+    Await.ready(retrivedUser, Duration.Inf)
   }
 }
