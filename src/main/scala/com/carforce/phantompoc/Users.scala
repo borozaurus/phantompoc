@@ -13,6 +13,8 @@ class Users extends CassandraTable[ConcreteUsers, User] {
   object name extends StringColumn(this)
   object registrationdate extends DateTimeColumn(this)
 
+  override val tableName = "users"
+
   def fromRow(row: Row): User = {
     User(
       id(row),

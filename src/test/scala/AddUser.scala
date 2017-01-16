@@ -24,7 +24,7 @@ class AddUser extends FlatSpec with Matchers {
       x => assert(x.isFullyFetched)
     }
 
-    Await.ready(insert, Duration.Inf)
+    Await.result(insert, Duration.Inf)
 
     val retrivedUser = MyDatabase.users.getById(uuid) map {
       case None => fail("No user retrived")
@@ -34,6 +34,6 @@ class AddUser extends FlatSpec with Matchers {
     }
 
     println("Waiting for result")
-    Await.ready(retrivedUser, Duration.Inf)
+    Await.result(retrivedUser, Duration.Inf)
   }
 }
